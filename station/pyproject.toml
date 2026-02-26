@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oa-station"
+version = "1.0.0"
+description = "Privacy-preserving inference proxy using blind-signed tickets and ephemeral API keys"
+license = "AGPL-3.0-or-later"
+classifiers = [
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+]
+authors = [
+    {name = "Open Anonymity Team", email = "hi@openanonymity.ai"}
+]
+requires-python = ">=3.12"
+
+dependencies = [
+    # Core
+    "python-dotenv>=1.0.1",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    
+    # Web framework
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    
+    # Database (SQLite)
+    "aiosqlite>=0.19.0",
+    "cryptography>=41.0.0",
+    
+    # HTTP client
+    "httpx[http2]>=0.25.2",
+    
+    # Auth & Security
+    "pynacl>=1.5.0",  # Ed25519 signing
+    
+    # Logging
+    "loguru>=0.7.0",
+    
+    # Production
+    "python-multipart>=0.0.6",
+    "orjson>=3.9.10",
+]
+
+[project.optional-dependencies]
+# Privacy Pass support (requires custom index, install via requirements.txt)
+tickets = [
+    "privacypass-py>=0.1.0",
+]
+# Development
+dev = [
+    "pytest>=7.4.3",
+    "pytest-asyncio>=0.21.1",
+    "pytest-mock>=3.14.0",
+    "black>=23.0.0",
+    "mypy>=1.5.0",
+]
+
+[project.urls]
+Homepage = "https://openanonymity.ai"
+Repository = "https://github.com/openanonymity/oa_station"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml", "*.yml", "*.json", "*.md"]
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+

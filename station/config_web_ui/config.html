@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Anonymity Station — Configuration</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400..800&family=Fira+Code:wght@300..700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background: #C6D4D0;
+            --background-hover: #ebeae5;
+            --foreground: #000000;
+            --muted: #e5e4dc;
+            --muted-foreground: #686868;
+            --link: #595959;
+            --button: #d9d8d3;
+            --button-hover: #c4c3bb;
+            --button-foreground: #403e37;
+            --border: #403e37;
+            --divider: #686868;
+            --card: #ffffff;
+            --card-foreground: #000000;
+            --radius: 0.5rem;
+            --font-heading: "EB Garamond", Georgia, serif;
+            --font-body: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            font-size: 14px;
+            line-height: 1.625;
+            background-color: var(--background);
+            color: var(--foreground);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+            padding: clamp(1rem, 4vw, 3rem);
+        }
+
+        ::selection { background-color: rgba(0, 0, 0, 0.1); }
+        .page-container { max-width: 620px; margin: 0 auto; width: 100%; }
+
+        header {
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1.5rem;
+            align-items: baseline;
+            justify-content: space-between;
+        }
+
+        .site-title {
+            font-family: var(--font-heading);
+            font-size: 1.875rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            line-height: 1.5rem;
+        }
+
+        .site-subtitle { font-size: 12px; color: var(--muted-foreground); }
+
+        h2 {
+            font-family: var(--font-heading);
+            font-size: 1.25rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            cursor: default;
+        }
+
+        section { margin-bottom: 1.75rem; }
+
+        .config-card {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 3px 3px 0px var(--foreground);
+            padding: 1rem 1.25rem;
+        }
+
+        /* Collapsible sections */
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+            user-select: none;
+        }
+        .section-header h2 { cursor: pointer; }
+        .collapse-icon {
+            font-size: 11px;
+            color: var(--muted-foreground);
+            transition: transform 0.2s ease;
+        }
+        .section-body { overflow: hidden; transition: max-height 0.25s ease; }
+        .section-body.collapsed { max-height: 0 !important; margin: 0; }
+
+        /* Form fields */
+        .config-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            margin-bottom: 0.75rem;
+        }
+        .config-field:last-child { margin-bottom: 0; }
+
+        .config-label { font-size: 11px; font-weight: 500; color: var(--foreground); }
+        .config-hint { color: var(--muted-foreground); font-size: 10px; margin-top: -0.1rem; }
+
+        .config-input, .config-select {
+            width: 100%;
+            padding: 0.4rem 0.65rem;
+            font-family: var(--font-body);
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--foreground);
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid #A8A7A2;
+            border-radius: var(--radius);
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
+        .config-input:focus, .config-select:focus {
+            outline: none;
+            border-color: var(--foreground);
+            background: rgba(255, 255, 255, 0.7);
+        }
+        .config-input::placeholder { color: #999; font-style: normal; }
+        .config-input:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .config-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23686868' d='M3 5l3 3 3-3'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            padding-right: 1.5rem;
+            cursor: pointer;
+        }
+
+        .secret-row { display: flex; align-items: center; gap: 0.35rem; }
+        .secret-row .config-input { flex: 1; }
+
+        .btn-sm {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.45rem;
+            font-family: var(--font-body);
+            font-size: 10px;
+            color: var(--button-foreground);
+            background: transparent;
+            border: 1px solid var(--divider);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .btn-sm:hover { border-color: var(--foreground); background: rgba(255, 255, 255, 0.3); }
+
+        /* Runtime rows */
+        .runtime-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid rgba(104, 104, 104, 0.12);
+            font-size: 12px;
+            gap: 1rem;
+        }
+        .runtime-row:last-child { border-bottom: none; }
+        .runtime-label { color: var(--muted-foreground); font-size: 11px; flex-shrink: 0; }
+        .runtime-value { text-align: right; word-break: break-all; max-width: 65%; font-size: 12px; }
+
+        .runtime-secret {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            text-align: right;
+            max-width: 75%;
+            justify-content: flex-end;
+        }
+        .runtime-secret-text {
+            font-size: 11px;
+            padding: 0.2rem 0.5rem;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid #A8A7A2;
+            border-radius: 0.35rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 240px;
+            user-select: all;
+        }
+
+        .status-dot {
+            display: inline-block; width: 6px; height: 6px;
+            border-radius: 50%; margin-right: 0.3rem; vertical-align: middle;
+        }
+        .status-dot.active { background-color: #166534; }
+        .status-dot.inactive { background-color: #991b1b; }
+
+        .env-badge {
+            font-size: 10px;
+            padding: 0.1rem 0.45rem;
+            border: 1px solid var(--divider);
+            border-radius: 0.375rem;
+            color: var(--muted-foreground);
+            font-family: var(--font-body);
+        }
+
+        /* Summary card (highlighted) */
+        .summary-card {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 3px 3px 0px var(--foreground);
+            padding: 1rem 1.25rem;
+        }
+        .summary-value {
+            font-size: 12px;
+            padding: 0.35rem 0.6rem;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid #A8A7A2;
+            border-radius: 0.35rem;
+            word-break: break-all;
+            user-select: all;
+            margin-top: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        .summary-value span { overflow: hidden; text-overflow: ellipsis; }
+
+        /* Save bar */
+        .save-bar {
+            position: sticky;
+            bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 3px 3px 0px var(--foreground);
+            font-size: 12px;
+            color: var(--muted-foreground);
+            margin-top: 1rem;
+        }
+        .save-btn {
+            padding: 0.35rem 0.85rem;
+            font-family: var(--font-body);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--card);
+            background: var(--foreground);
+            border: 1px solid var(--foreground);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: opacity 0.15s ease;
+        }
+        .save-btn:hover { opacity: 0.85; }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            padding: 0.5rem 1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 3px 3px 0px var(--foreground);
+            font-size: 12px;
+            font-family: var(--font-body);
+            opacity: 0;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            pointer-events: none;
+        }
+        .toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        .tier-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .tier-table th, .tier-table td {
+            padding: 0.3rem 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(104, 104, 104, 0.12);
+        }
+        .tier-table th { font-weight: 600; font-size: 11px; color: var(--muted-foreground); }
+        .tier-table tr:last-child td { border-bottom: none; }
+
+        .endpoint-list { list-style: none; padding: 0; font-size: 12px; }
+        .endpoint-list li {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid rgba(104, 104, 104, 0.08);
+            display: flex; gap: 0.5rem; align-items: baseline;
+        }
+        .endpoint-list li:last-child { border-bottom: none; }
+        .endpoint-method { font-weight: 600; font-size: 10px; color: var(--muted-foreground); min-width: 40px; }
+        .endpoint-path { color: var(--foreground); }
+        .endpoint-desc { color: var(--muted-foreground); font-size: 10px; margin-left: auto; }
+
+        .section-divider { border: none; border-top: 1px solid rgba(104, 104, 104, 0.15); margin: 0.5rem 0; }
+
+        footer { padding-top: 1.5rem; padding-bottom: 1rem; font-size: 11px; color: var(--muted-foreground); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        section { animation: fadeIn 0.3s ease both; animation-delay: var(--reveal-delay, 0ms); }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <header>
+            <div>
+                <h1 class="site-title">Open Anonymity Station</h1>
+                <div class="site-subtitle" style="margin-top: 0.5rem;">configuration</div>
+            </div>
+            <span class="env-badge" id="env-badge">loading...</span>
+        </header>
+        <main id="main"></main>
+        <div class="toast" id="toast"></div>
+        <footer>
+            <div>Interested in running an OA station? Email <a href="mailto:join@openanonymity.ai" style="color: var(--link); text-decoration: underline;">join@openanonymity.ai</a></div>
+            <div style="margin-top: 0.25rem;">Open Anonymity Station</div>
+        </footer>
+    </div>
+
+    <script>
+    let originalConfig = {};
+    let currentConfig = {};
+    let runtimeInfo = {};
+
+    // Section definitions: required fields at top, optional collapsed
+    const SECTIONS = [
+        {
+            id: 'required', title: 'Required', collapsed: false,
+            description: 'Set this to get started.',
+            fields: [
+                { key: 'OPENROUTER_MANAGEMENT_KEY', label: 'OpenRouter Management Key', hint: 'Required to issue ephemeral API keys (sk-or-v1-...)', type: 'secret', placeholder: 'sk-or-v1-...' },
+            ]
+        },
+        {
+            id: 'identity', title: 'Station Identity', collapsed: true,
+            fields: [
+                { key: 'STATION_STATION_ID', label: 'Station ID', hint: 'Human-readable name for response signatures', type: 'text', default: 'station-localhost' },
+                { key: 'STATION_IDENTITY_FILE', label: 'Identity File', hint: 'Path to Ed25519 keypair file', type: 'text', default: 'identity.json' },
+            ]
+        },
+        {
+            id: 'tickets', title: 'Inference Ticket Keys', collapsed: true,
+            description: 'Auto-generated on first run and saved to ticket_keys.json. Override here if needed.',
+            fields: [
+                { key: 'STATION_TOKEN_PUBLIC_KEY', label: 'Token Public Key', type: 'secret', runtimeKey: 'ticket_public_key' },
+                { key: 'STATION_TOKEN_PRIVATE_KEY', label: 'Token Private Key', type: 'secret' },
+            ]
+        },
+        {
+            id: 'server', title: 'Server', collapsed: true,
+            fields: [
+                { key: 'STATION_HOST', label: 'Host', type: 'text', default: '0.0.0.0' },
+                { key: 'STATION_PORT', label: 'Port', type: 'number', default: '18888' },
+                { key: 'STATION_LOG_LEVEL', label: 'Log Level', type: 'select', options: ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], default: 'INFO' },
+                { key: 'STATION_RELOAD', label: 'Auto-reload', type: 'select', options: ['true', 'false'], default: 'false' },
+            ]
+        },
+        {
+            id: 'security', title: 'Security', collapsed: true,
+            fields: [
+                { key: 'STATION_REQUEST_KEY_ALLOWED_IPS', label: 'Allowed IPs for /request_key', hint: 'Comma-separated', type: 'text' },
+                { key: 'STATION_TRUSTED_PROXIES', label: 'Trusted Proxies', hint: 'Comma-separated', type: 'text' },
+            ]
+        },
+        {
+            id: 'database', title: 'Database', collapsed: true,
+            fields: [
+                { key: 'STORAGE_TYPE', label: 'Storage Type', type: 'select', options: ['sqlite'], default: 'sqlite' },
+                { key: 'DATABASE_FILE', label: 'Database File', type: 'text', default: 'station.db' },
+            ]
+        },
+        {
+            id: 'cors', title: 'CORS', collapsed: true,
+            fields: [
+                { key: 'CORS_ORIGINS', label: 'Allowed Origins', hint: 'Comma-separated', type: 'text', default: 'http://localhost:3000' },
+            ]
+        },
+        { id: 'tiers', title: 'Ticket Tiers', readonly: true, collapsed: true },
+        { id: 'endpoints', title: 'API Endpoints', readonly: true, collapsed: true },
+        { id: 'summary', title: 'Your Station', readonly: true, collapsed: false },
+    ];
+
+    async function loadConfig() {
+        try {
+            const [configRes, runtimeRes] = await Promise.all([
+                fetch('/api/config?reveal=true'),
+                fetch('/api/config/runtime')
+            ]);
+            if (configRes.ok) {
+                const data = await configRes.json();
+                originalConfig = { ...data.env };
+                currentConfig = { ...data.env };
+            }
+            if (runtimeRes.ok) {
+                runtimeInfo = await runtimeRes.json();
+            }
+        } catch (e) {
+            console.error('Failed to load config:', e);
+        }
+        renderAll();
+    }
+
+    function renderAll() {
+        const main = document.getElementById('main');
+        main.innerHTML = '';
+
+        let delay = 0;
+        SECTIONS.forEach(section => {
+            const el = document.createElement('section');
+            el.style.setProperty('--reveal-delay', delay + 'ms');
+            delay += 40;
+
+            const isCollapsible = section.collapsed !== undefined;
+            let startCollapsed = section.collapsed;
+
+            // Header
+            const header = document.createElement('div');
+            header.className = 'section-header';
+            header.innerHTML = `<h2>${section.title}</h2>` +
+                (isCollapsible ? `<span class="collapse-icon">${startCollapsed ? '+ show' : '- hide'}</span>` : '');
+
+            el.appendChild(header);
+
+            if (section.description && !startCollapsed) {
+                const desc = document.createElement('div');
+                desc.className = 'config-hint';
+                desc.style.marginBottom = '0.5rem';
+                desc.textContent = section.description;
+                el.appendChild(desc);
+            }
+
+            // Body
+            const body = document.createElement('div');
+            body.className = 'section-body' + (startCollapsed ? ' collapsed' : '');
+
+            if (section.description && startCollapsed) {
+                const desc = document.createElement('div');
+                desc.className = 'config-hint';
+                desc.style.marginBottom = '0.5rem';
+                desc.textContent = section.description;
+                body.appendChild(desc);
+            }
+
+            const card = document.createElement('div');
+            card.className = section.id === 'summary' ? 'summary-card' : 'config-card';
+
+            if (section.id === 'summary') {
+                renderSummary(card);
+            } else if (section.id === 'tiers') {
+                renderTiers(card);
+            } else if (section.id === 'endpoints') {
+                renderEndpoints(card);
+            } else if (section.fields) {
+                section.fields.forEach(field => card.appendChild(createField(field)));
+            }
+
+            body.appendChild(card);
+            body.style.maxHeight = startCollapsed ? '0' : body.scrollHeight + 1000 + 'px';
+            el.appendChild(body);
+
+            if (isCollapsible) {
+                header.addEventListener('click', () => {
+                    const icon = header.querySelector('.collapse-icon');
+                    const isNowCollapsed = !body.classList.contains('collapsed');
+                    body.classList.toggle('collapsed');
+                    if (isNowCollapsed) {
+                        body.style.maxHeight = '0';
+                        icon.textContent = '+ show';
+                    } else {
+                        body.style.maxHeight = body.scrollHeight + 1000 + 'px';
+                        icon.textContent = '- hide';
+                    }
+                });
+            }
+
+            main.appendChild(el);
+        });
+
+        // Save bar
+        const saveBar = document.createElement('div');
+        saveBar.className = 'save-bar';
+        saveBar.id = 'save-bar';
+        saveBar.style.display = 'none';
+        saveBar.innerHTML = '<span>Unsaved changes</span><button class="save-btn" onclick="saveConfig()">Save to .env</button>';
+        main.appendChild(saveBar);
+
+        document.getElementById('env-badge').textContent = 'localhost';
+        updateSaveBar();
+    }
+
+    function renderSummary(card) {
+        const baseUrl = runtimeInfo.base_url || window.location.origin;
+        const bearerToken = runtimeInfo.ticket_issuance_bearer_token;
+
+        let html = '';
+
+        // Base URL
+        html += '<div class="config-field">';
+        html += '<label class="config-label">Station Base URL</label>';
+        html += `<div class="summary-value"><span>${esc(baseUrl)}</span><button class="btn-sm" onclick="copyText('${esc(baseUrl)}')">copy</button></div>`;
+        html += '</div>';
+
+        // Bearer token
+        html += '<div class="config-field">';
+        html += '<label class="config-label">Ticket Issuance Bearer Token</label>';
+        if (bearerToken) {
+            html += '<div class="config-hint">Use this to call the ticket issuance API. Regenerated on each restart.</div>';
+            html += `<div class="summary-value">`;
+            html += `<span class="runtime-secret-text" data-full="${esc(bearerToken)}" data-hidden="true" style="max-width:none;flex:1">${mask(bearerToken)}</span>`;
+            html += `<button class="btn-sm" onclick="toggleSecret(this)">show</button>`;
+            html += `<button class="btn-sm" onclick="copyText('${esc(bearerToken)}')">copy</button>`;
+            html += `</div>`;
+        } else {
+            html += '<div class="config-hint">Not available. Ticket issuance service is not running (install privacypass-py).</div>';
+        }
+        html += '</div>';
+
+        // Service status
+        html += '<hr class="section-divider">';
+        const statuses = [
+            { label: 'Ticket Issuance', active: runtimeInfo.ticket_issuance_available },
+            { label: 'Ticket Redemption', active: runtimeInfo.ticket_redemption_available },
+            { label: 'Key Cleanup Worker', active: runtimeInfo.cleanup_worker_active },
+        ];
+        statuses.forEach(s => {
+            html += `<div class="runtime-row">`;
+            html += `<span class="runtime-label">${s.label}</span>`;
+            html += `<span class="runtime-value"><span class="status-dot ${s.active ? 'active' : 'inactive'}"></span>${s.active ? 'active' : 'inactive'}</span>`;
+            html += `</div>`;
+        });
+
+        card.innerHTML = html;
+    }
+
+    function renderTiers(card) {
+        const tiers = runtimeInfo.tier_config || {
+            '1_ticket': { credit_limit: 2.0, duration_minutes: 60 },
+            '2_tickets': { credit_limit: 2.0, duration_minutes: 60 },
+            '3_tickets': { credit_limit: 4.0, duration_minutes: 60 },
+        };
+        let html = '<table class="tier-table"><thead><tr><th>Tickets</th><th>Credit</th><th>Duration</th></tr></thead><tbody>';
+        Object.entries(tiers).forEach(([key, t]) => {
+            html += `<tr><td>${esc(key.replace(/_/g, ' '))}</td><td>$${t.credit_limit.toFixed(2)}</td><td>${t.duration_minutes} min</td></tr>`;
+        });
+        html += '</tbody></table>';
+        card.innerHTML = html;
+    }
+
+    function renderEndpoints(card) {
+        const endpoints = [
+            { method: 'POST', path: '/api/request_key', desc: 'Issue ephemeral key' },
+            { method: 'POST', path: '/api/tickets/ticket_request', desc: 'Issue tickets (Bearer)' },
+            { method: 'GET', path: '/api/tickets/issue/public-key', desc: 'Issuer public key' },
+            { method: 'GET', path: '/docs', desc: 'Swagger UI (dev)' },
+        ];
+        let html = '<ul class="endpoint-list">';
+        endpoints.forEach(e => {
+            html += `<li><span class="endpoint-method">${e.method}</span><span class="endpoint-path">${e.path}</span><span class="endpoint-desc">${e.desc}</span></li>`;
+        });
+        html += '</ul>';
+        card.innerHTML = html;
+    }
+
+    function createField(field) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'config-field';
+
+        const label = document.createElement('label');
+        label.className = 'config-label';
+        label.textContent = field.label;
+        wrapper.appendChild(label);
+
+        if (field.hint) {
+            const hint = document.createElement('div');
+            hint.className = 'config-hint';
+            hint.textContent = field.hint;
+            wrapper.appendChild(hint);
+        }
+
+        // For ticket keys, show auto-generated value from runtime as placeholder
+        const val = currentConfig[field.key] || '';
+        const runtimeVal = field.runtimeKey ? (runtimeInfo[field.runtimeKey] || '') : '';
+
+        if (field.type === 'secret') {
+            const row = document.createElement('div');
+            row.className = 'secret-row';
+
+            const input = document.createElement('input');
+            input.type = 'password';
+            input.className = 'config-input';
+            input.value = val;
+            input.placeholder = runtimeVal ? 'auto-generated (in ticket_keys.json)' : (field.placeholder || '');
+            input.dataset.key = field.key;
+            if (runtimeVal && !val) input.disabled = true;
+            input.addEventListener('input', () => { currentConfig[field.key] = input.value; updateSaveBar(); });
+
+            const toggle = document.createElement('button');
+            toggle.className = 'btn-sm';
+            toggle.textContent = 'show';
+            toggle.addEventListener('click', () => {
+                const pw = input.type === 'password';
+                input.type = pw ? 'text' : 'password';
+                toggle.textContent = pw ? 'hide' : 'show';
+            });
+
+            row.appendChild(input);
+            row.appendChild(toggle);
+
+            if (runtimeVal && !val) {
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'btn-sm';
+                copyBtn.textContent = 'copy';
+                copyBtn.addEventListener('click', () => copyText(runtimeVal));
+                row.appendChild(copyBtn);
+            }
+
+            wrapper.appendChild(row);
+        } else if (field.type === 'select') {
+            const select = document.createElement('select');
+            select.className = 'config-select';
+            select.dataset.key = field.key;
+            field.options.forEach(opt => {
+                const option = document.createElement('option');
+                option.value = opt;
+                option.textContent = opt;
+                select.appendChild(option);
+            });
+            select.value = val || field.default || '';
+            select.addEventListener('change', () => { currentConfig[field.key] = select.value; updateSaveBar(); });
+            wrapper.appendChild(select);
+        } else {
+            const input = document.createElement('input');
+            input.type = field.type === 'number' ? 'number' : 'text';
+            input.className = 'config-input';
+            input.value = val;
+            input.placeholder = field.default ? `default: ${field.default}` : '';
+            input.dataset.key = field.key;
+            input.addEventListener('input', () => { currentConfig[field.key] = input.value; updateSaveBar(); });
+            wrapper.appendChild(input);
+        }
+
+        return wrapper;
+    }
+
+    function updateSaveBar() {
+        const bar = document.getElementById('save-bar');
+        if (!bar) return;
+        bar.style.display = JSON.stringify(currentConfig) !== JSON.stringify(originalConfig) ? 'flex' : 'none';
+    }
+
+    async function saveConfig() {
+        try {
+            const res = await fetch('/api/config', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ env: currentConfig })
+            });
+            if (res.ok) {
+                originalConfig = { ...currentConfig };
+                updateSaveBar();
+                showToast('Saved — restarting...');
+                // Poll until server comes back, then reload
+                setTimeout(() => pollForRestart(), 1500);
+            } else {
+                showToast('Failed to save configuration.');
+            }
+        } catch (e) {
+            showToast('Error saving: ' + e.message);
+        }
+    }
+
+    function pollForRestart() {
+        let attempts = 0;
+        const interval = setInterval(async () => {
+            attempts++;
+            if (attempts > 30) {
+                clearInterval(interval);
+                showToast('Server did not come back. Check the terminal.');
+                return;
+            }
+            try {
+                const res = await fetch('/api/config/runtime', { signal: AbortSignal.timeout(2000) });
+                if (res.ok) {
+                    clearInterval(interval);
+                    window.location.reload();
+                }
+            } catch (e) {
+                // Server still restarting, keep polling
+            }
+        }, 1000);
+    }
+
+    function esc(str) {
+        if (!str) return '';
+        const d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML.replace(/'/g, '&#39;');
+    }
+
+    function mask(val) {
+        if (!val) return '\u2014';
+        if (val.length > 16) return val.slice(0, 8) + '...' + val.slice(-4);
+        return '***';
+    }
+
+    function toggleSecret(btn) {
+        const span = btn.parentElement.querySelector('.runtime-secret-text');
+        const hidden = span.dataset.hidden === 'true';
+        span.textContent = hidden ? span.dataset.full : mask(span.dataset.full);
+        span.dataset.hidden = hidden ? 'false' : 'true';
+        btn.textContent = hidden ? 'hide' : 'show';
+    }
+
+    function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard'));
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('Copied to clipboard');
+        }
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('visible');
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => toast.classList.remove('visible'), 3000);
+    }
+
+    document.addEventListener('DOMContentLoaded', loadConfig);
+    </script>
+</body>
+</html>

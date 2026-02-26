@@ -1,0 +1,82 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.venv
+venv/
+ENV/
+
+# Station - Generated files
+station/identity.json
+station/ticket_keys.json
+station/station.db
+station/station.db-shm
+station/station.db-wal
+
+# Environment variables
+.env
+.env.*
+!*env.example
+
+# Logs
+logs/
+*.log
+
+# OS specific
+.DS_Store
+Thumbs.db
+.directory
+*.swp
+*.swo
+
+# Editor specific
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Secrets
+secrets/
+
+# UV
+.uv/
+__pypackages__/
+
+# Lock files
+uv.lock
+station/uv.lock
+
+# Development context
+.context/
